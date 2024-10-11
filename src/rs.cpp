@@ -4057,13 +4057,38 @@ void rs2_deproject_pixel_to_point(float point[3], const struct rs2_intrinsics* i
     assert(intrin->model != RS2_DISTORTION_MODIFIED_BROWN_CONRADY); // Cannot deproject from a forward-distorted image
     //assert(intrin->model != RS2_DISTORTION_BROWN_CONRADY); // Cannot deproject to an brown conrady model
 
+    int model = intrin->model;
+
+    static int pass = 0;
+    if (!pass) {
+        pass = 1;
+        fprintf(stderr, "model=%d, %f %f %f %f %f\n", model,
+            intrin->coeffs[0],
+            intrin->coeffs[1],
+            intrin->coeffs[2],
+            intrin->coeffs[3],
+            intrin->coeffs[4]);
+    }
+
+    if (model == RS2_DISTORTION_BROWN_CONRADY)
+    {
+        if (intrin->coeffs[0] == 0
+            && intrin->coeffs[1] == 0
+            && intrin->coeffs[2] == 0
+            && intrin->coeffs[3] == 0
+            && intrin->coeffs[4] == 0)
+        {
+            model = RS2_DISTORTION_NONE;
+        }
+    }
+
     float x = (pixel[0] - intrin->ppx) / intrin->fx;
     float y = (pixel[1] - intrin->ppy) / intrin->fy;
 
     float xo = x;
     float yo = y;
 
-    if (intrin->model == RS2_DISTORTION_INVERSE_BROWN_CONRADY)
+    if (model == RS2_DISTORTION_INVERSE_BROWN_CONRADY)
     {
         // need to loop until convergence 
         // 10 iterations determined empirically
@@ -4079,7 +4104,7 @@ void rs2_deproject_pixel_to_point(float point[3], const struct rs2_intrinsics* i
             y = (yo - delta_y) * icdist;
         }
     }
-    if (intrin->model == RS2_DISTORTION_BROWN_CONRADY)
+    if (model == RS2_DISTORTION_BROWN_CONRADY)
     {
         // need to loop until convergence 
         // 10 iterations determined empirically
@@ -4094,7 +4119,7 @@ void rs2_deproject_pixel_to_point(float point[3], const struct rs2_intrinsics* i
         }
 
     }
-    if (intrin->model == RS2_DISTORTION_KANNALA_BRANDT4)
+    if (model == RS2_DISTORTION_KANNALA_BRANDT4)
     {
         float rd = sqrtf(x * x + y * y);
         if (rd < FLT_EPSILON)
@@ -4119,7 +4144,7 @@ void rs2_deproject_pixel_to_point(float point[3], const struct rs2_intrinsics* i
         x *= r / rd;
         y *= r / rd;
     }
-    if (intrin->model == RS2_DISTORTION_FTHETA)
+    if (model == RS2_DISTORTION_FTHETA)
     {
         float rd = sqrtf(x * x + y * y);
         if (rd < FLT_EPSILON)
