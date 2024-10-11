@@ -58,6 +58,10 @@ include(third-party/CMakeLists.txt)
 
 target_link_libraries( ${LRS_TARGET} PUBLIC rsutils )
 
+if (CMAKE_SYSTEM MATCHES "Linux")
+    target_link_libraries( ${LRS_TARGET} PRIVATE atomic )
+endif()
+
 if(BUILD_WITH_DDS)
     if (CMAKE_SYSTEM MATCHES "Windows" OR CMAKE_SYSTEM MATCHES "Linux")
 

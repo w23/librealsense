@@ -6,6 +6,7 @@
 #include "librealsense-exception.h"
 #include <librealsense2/hpp/rs_processing.hpp>
 #include <ostream>
+#include <cmath>
 
 
 std::ostream & operator<<( std::ostream & out, rs2_extrinsics const & e )
